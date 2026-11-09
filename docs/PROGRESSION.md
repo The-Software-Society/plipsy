@@ -1,6 +1,6 @@
 # Progression — stories, unlocks, and the path
 
-How a child actually moves through Mia today, what gates what, and what the shape
+How a child actually moves through Plipsy today, what gates what, and what the shape
 needs to become. Companion to [CURRICULUM.md](CURRICULUM.md) (what is taught) —
 this doc is about **order, unlocks, and pacing**.
 

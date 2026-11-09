@@ -1,6 +1,6 @@
 # Curriculum — the whole picture
 
-High-level map of what Mia teaches, in what order, and why. This is the human
+High-level map of what Plipsy teaches, in what order, and why. This is the human
 source-of-truth; the code that implements it lives in `src/curriculum/` and
 `src/stories/`. Per-story detail lives in [stories/](stories/) (one doc per unit).
 

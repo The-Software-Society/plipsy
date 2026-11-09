@@ -1,11 +1,11 @@
-# CLAUDE.md — Mia
+# CLAUDE.md — Plipsy
 
 Read this first. It's the map: what the app is, how we work on it, and where to go
 depending on what we're doing.
 
 ## What this is
 
-**Mia** is an early-reading curriculum for young children, delivered as short
+**Plipsy** is an early-reading curriculum for young children (the hero is Mia), delivered as short
 interactive stories (Expo / React Native, runs on web + iOS + Android). A child reads a
 decodable story, makes choices, and **drags letter tiles to spell** the words. Spelling
 accuracy drives a Leitner SRS that tracks mastery and paces new-word introduction.
