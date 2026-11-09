@@ -5,19 +5,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useVocab } from '@/src/vocab/store';
 import { useParentLock } from '@/src/lib/parentLock';
 import { audio } from '@/src/audio/AudioPlayer';
-import { getSupabase } from '@/src/supabase/client';
-import { MIA } from '@/src/child/profile';
+import { env } from '@/src/lib/env';
 import { peek } from '@/src/lib/queue';
+import { recentSessions, LocalSession } from '@/src/session/history';
 import { type, colors, spacing, radius } from '@/src/theme';
 import { VocabEntry } from '@/src/vocab/tracker';
 
-type SessionRow = {
-  id: string;
-  story_id: string;
-  started_at: string;
-  ended_at: string | null;
-  completed: boolean;
-};
+type SessionRow = LocalSession;
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -60,20 +54,9 @@ export default function ParentDashboard() {
       const queue = await peek();
       if (!cancelled) setPendingWrites(queue.length);
 
-      const client = getSupabase();
-      if (!client) {
-        setLoadError('Supabase not configured. Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to .env.');
-        return;
-      }
       try {
-        const { data, error } = await client
-          .from('sessions')
-          .select('id, story_id, started_at, ended_at, completed')
-          .eq('child_id', MIA.id)
-          .order('started_at', { ascending: false })
-          .limit(20);
-        if (error) throw error;
-        if (!cancelled) setSessions((data ?? []) as SessionRow[]);
+        const list = await recentSessions();
+        if (!cancelled) setSessions(list);
       } catch (e: unknown) {
         if (!cancelled) setLoadError(String((e as Error).message ?? e));
       }
@@ -153,7 +136,11 @@ export default function ParentDashboard() {
 
         <Section title="Sync status">
           <Text style={[type.small, { color: colors.inkSoft }]}>
-            {pendingWrites === 0 ? 'All writes synced.' : `${pendingWrites} write${pendingWrites === 1 ? '' : 's'} queued for sync.`}
+            {!env.cloudSync
+              ? 'Cloud sync is off. All progress stays on this device.'
+              : pendingWrites === 0
+                ? 'All writes synced.'
+                : `${pendingWrites} write${pendingWrites === 1 ? '' : 's'} queued for sync.`}
           </Text>
         </Section>
 

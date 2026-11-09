@@ -1,5 +1,6 @@
 import { VocabEntry } from './tracker';
 import { MIA } from '@/src/child/profile';
+import { env } from '@/src/lib/env';
 import { getSupabase } from '@/src/supabase/client';
 import { enqueue, drain } from '@/src/lib/queue';
 import { DbVocabRow } from '@/src/supabase/types';
@@ -19,6 +20,7 @@ const toRow = (entry: VocabEntry): DbVocabRow => ({
 });
 
 export const syncVocabEntry = async (entry: VocabEntry): Promise<void> => {
+  if (!env.cloudSync) return; // progress stays in on-device storage (src/vocab/store.ts)
   const row = toRow(entry);
   const client = getSupabase();
   if (!client) {

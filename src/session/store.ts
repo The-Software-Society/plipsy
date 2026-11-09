@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { MIA } from '@/src/child/profile';
+import { env } from '@/src/lib/env';
+import { recordSessionStart, recordSessionEnd } from '@/src/session/history';
 import { getSupabase } from '@/src/supabase/client';
 import { enqueue } from '@/src/lib/queue';
 import { DbSessionRow, DbSessionEventRow } from '@/src/supabase/types';
@@ -26,6 +28,7 @@ const newId = () =>
   });
 
 const insertRow = async (table: 'sessions' | 'session_events', row: Record<string, unknown>) => {
+  if (!env.cloudSync) return; // on-device only: nothing is queued for upload
   const client = getSupabase();
   if (!client) {
     await enqueue({ table, op: 'insert', payload: row });
@@ -40,6 +43,7 @@ const insertRow = async (table: 'sessions' | 'session_events', row: Record<strin
 };
 
 const updateRow = async (table: 'sessions', payload: { id: string } & Record<string, unknown>) => {
+  if (!env.cloudSync) return;
   const client = getSupabase();
   if (!client) {
     await enqueue({ table, op: 'update', payload });
@@ -72,6 +76,7 @@ export const useSession = create<SessionState>((set, get) => ({
       ended_at: null,
       completed: false,
     };
+    await recordSessionStart({ id: row.id, story_id: storyId, started_at: row.started_at, ended_at: null, completed: false });
     await insertRow('sessions', row);
     return session;
   },
@@ -92,9 +97,11 @@ export const useSession = create<SessionState>((set, get) => ({
     const active = get().active;
     if (!active) return;
     set({ active: null });
+    const endedAt = new Date().toISOString();
+    await recordSessionEnd(active.id, endedAt, completed);
     await updateRow('sessions', {
       id: active.id,
-      ended_at: new Date().toISOString(),
+      ended_at: endedAt,
       completed,
     });
   },
